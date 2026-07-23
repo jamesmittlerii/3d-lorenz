@@ -6,7 +6,10 @@ const ATTRACTORS: { id: AttractorType; label: string; color: string }[] = [
   { id: 'lorenz', label: 'Lorenz', color: '#ff00cc' },
   { id: 'chua', label: "Chua's Circuit", color: '#00ffcc' },
   { id: 'rossler', label: 'Rössler', color: '#ffaa00' },
-  { id: 'thomas', label: 'Thomas', color: '#9900ff' }
+  { id: 'thomas', label: 'Thomas', color: '#9900ff' },
+  { id: 'aizawa', label: 'Aizawa', color: '#ff3366' },
+  { id: 'halvorsen', label: 'Halvorsen', color: '#0066ff' },
+  { id: 'rabinovich', label: 'Rabinovich-Fabrikant', color: '#aaff00' }
 ];
 
 function App() {

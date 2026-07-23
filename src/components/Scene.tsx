@@ -5,8 +5,11 @@ import { LorenzAttractor } from './LorenzAttractor';
 import { ChuaCircuit } from './ChuaCircuit';
 import { RosslerAttractor } from './RosslerAttractor';
 import { ThomasAttractor } from './ThomasAttractor';
+import { AizawaAttractor } from './AizawaAttractor';
+import { HalvorsenAttractor } from './HalvorsenAttractor';
+import { RabinovichFabrikantAttractor } from './RabinovichFabrikantAttractor';
 
-export type AttractorType = 'lorenz' | 'chua' | 'rossler' | 'thomas';
+export type AttractorType = 'lorenz' | 'chua' | 'rossler' | 'thomas' | 'aizawa' | 'halvorsen' | 'rabinovich';
 
 export function Scene({ type = 'lorenz' }: { type?: AttractorType }) {
   // Rössler tends to have z values around 10, Lorenz around 25, Chua and Thomas around 0
@@ -14,7 +17,10 @@ export function Scene({ type = 'lorenz' }: { type?: AttractorType }) {
     lorenz: [0, 0, 25],
     chua: [0, 0, 0],
     rossler: [0, 0, 10],
-    thomas: [0, 0, 0]
+    thomas: [0, 0, 0],
+    aizawa: [0, 0, 0],
+    halvorsen: [0, 0, 0],
+    rabinovich: [0, 0, 0]
   };
   const target = targetMap[type];
 
@@ -27,10 +33,13 @@ export function Scene({ type = 'lorenz' }: { type?: AttractorType }) {
       <directionalLight position={[10, 10, 10]} intensity={1} />
       
       {/* The Attractor */}
-      {type === 'lorenz' && <LorenzAttractor maxPoints={2000} speed={4} />}
-      {type === 'chua' && <ChuaCircuit maxPoints={2000} speed={4} />}
-      {type === 'rossler' && <RosslerAttractor maxPoints={2000} speed={4} />}
-      {type === 'thomas' && <ThomasAttractor maxPoints={2000} speed={4} />}
+      {type === 'lorenz' && <LorenzAttractor maxPoints={20000} speed={4} />}
+      {type === 'chua' && <ChuaCircuit maxPoints={20000} speed={4} />}
+      {type === 'rossler' && <RosslerAttractor maxPoints={20000} speed={16} />}
+      {type === 'thomas' && <ThomasAttractor maxPoints={20000} speed={16} />}
+      {type === 'aizawa' && <AizawaAttractor maxPoints={20000} speed={8} />}
+      {type === 'halvorsen' && <HalvorsenAttractor maxPoints={20000} speed={8} />}
+      {type === 'rabinovich' && <RabinovichFabrikantAttractor maxPoints={20000} speed={8} />}
       
       {/* Controls to spin and zoom */}
       <OrbitControls 

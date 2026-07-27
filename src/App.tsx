@@ -1,6 +1,6 @@
 import { Suspense, useState } from 'react';
-import { Scene, type AttractorType } from './components/Scene';
-import { Activity } from 'lucide-react';
+import { Scene, type AttractorType, type DisplayMode } from './components/Scene';
+import { Activity, Box, Boxes, Spline } from 'lucide-react';
 
 const ATTRACTORS: { id: AttractorType; label: string; color: string }[] = [
   { id: 'lorenz', label: 'Lorenz', color: '#ff00cc' },
@@ -9,13 +9,21 @@ const ATTRACTORS: { id: AttractorType; label: string; color: string }[] = [
   { id: 'thomas', label: 'Thomas', color: '#9900ff' },
   { id: 'aizawa', label: 'Aizawa', color: '#ff3366' },
   { id: 'halvorsen', label: 'Halvorsen', color: '#0066ff' },
-  { id: 'rabinovich', label: 'Rabinovich-Fabrikant', color: '#aaff00' }
+  { id: 'rabinovich', label: 'Rabinovich-Fabrikant', color: '#aaff00' },
+];
+
+const DISPLAY_MODES: { id: DisplayMode; label: string; icon: typeof Spline }[] = [
+  { id: 'line', label: 'Line Trail', icon: Spline },
+  { id: 'led-cube', label: 'LED Faces 32×32', icon: Box },
+  { id: 'led-volume', label: 'LED Volume 32³', icon: Boxes },
 ];
 
 function App() {
   const [attractor, setAttractor] = useState<AttractorType>('lorenz');
-  
-  const activeAttractorConfig = ATTRACTORS.find(a => a.id === attractor) || ATTRACTORS[0];
+  const [mode, setMode] = useState<DisplayMode>('line');
+
+  const activeAttractorConfig = ATTRACTORS.find((a) => a.id === attractor) || ATTRACTORS[0];
+  const activeMode = DISPLAY_MODES.find((m) => m.id === mode) || DISPLAY_MODES[0];
 
   return (
     <>
@@ -23,11 +31,30 @@ function App() {
         <header className="header">
           <h1 className="title">Chaotic Attractors</h1>
           <p className="subtitle">Visualizing chaos in 3D space</p>
-          
-          <div style={{ marginTop: '1.5rem', display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+
+          <div className="mode-row">
+            {DISPLAY_MODES.map((m) => {
+              const Icon = m.icon;
+              const active = mode === m.id;
+              return (
+                <button
+                  key={m.id}
+                  type="button"
+                  className={`mode-btn${active ? ' active' : ''}`}
+                  onClick={() => setMode(m.id)}
+                >
+                  <Icon size={16} />
+                  {m.label}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="attractor-row">
             {ATTRACTORS.map((config) => (
-              <button 
+              <button
                 key={config.id}
+                type="button"
                 onClick={() => setAttractor(config.id)}
                 style={{
                   padding: '0.5rem 1rem',
@@ -38,7 +65,7 @@ function App() {
                   cursor: 'pointer',
                   fontFamily: 'inherit',
                   fontWeight: 600,
-                  transition: 'all 0.2s'
+                  transition: 'all 0.2s',
                 }}
               >
                 {config.label}
@@ -46,16 +73,17 @@ function App() {
             ))}
           </div>
         </header>
-        
+
         <footer className="footer">
           <Activity size={18} color={activeAttractorConfig.color} />
-          <span>Dynamic Rendering: {activeAttractorConfig.label}</span>
+          <span>
+            {activeMode.label} · {activeAttractorConfig.label}
+          </span>
         </footer>
       </div>
-      
-      {/* 3D Canvas */}
+
       <Suspense fallback={null}>
-        <Scene type={attractor} />
+        <Scene type={attractor} mode={mode} />
       </Suspense>
     </>
   );

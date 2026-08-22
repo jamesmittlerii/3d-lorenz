@@ -11,6 +11,7 @@ export type Vec3 = { x: number; y: number; z: number };
 
 export type AttractorConfig = {
   color: string;
+  lineColors: readonly [string, string];
   speed: number;
   dtScale: number;
   /** Approximate world-space half-extent after scaling (for camera / cube sizing). */
@@ -28,6 +29,7 @@ function chuaH(x: number, m0: number, m1: number) {
 export const ATTRACTOR_SYSTEMS: Record<AttractorType, AttractorConfig> = {
   lorenz: {
     color: '#ff00cc',
+    lineColors: ['#ff00cc', '#3333ff'],
     speed: 4,
     dtScale: 0.5,
     extent: 40,
@@ -47,6 +49,7 @@ export const ATTRACTOR_SYSTEMS: Record<AttractorType, AttractorConfig> = {
   },
   chua: {
     color: '#00ffcc',
+    lineColors: ['#00ffcc', '#00ff66'],
     speed: 4,
     dtScale: 0.5,
     extent: 40,
@@ -71,6 +74,7 @@ export const ATTRACTOR_SYSTEMS: Record<AttractorType, AttractorConfig> = {
   },
   rossler: {
     color: '#ffaa00',
+    lineColors: ['#ffaa00', '#ff0066'],
     speed: 16,
     dtScale: 0.5,
     extent: 30,
@@ -93,6 +97,7 @@ export const ATTRACTOR_SYSTEMS: Record<AttractorType, AttractorConfig> = {
   },
   thomas: {
     color: '#9900ff',
+    lineColors: ['#9900ff', '#ffcc00'],
     speed: 32,
     dtScale: 0.5,
     extent: 40,
@@ -113,6 +118,7 @@ export const ATTRACTOR_SYSTEMS: Record<AttractorType, AttractorConfig> = {
   },
   aizawa: {
     color: '#ff3366',
+    lineColors: ['#ff3366', '#ffcc00'],
     speed: 8,
     dtScale: 0.5,
     extent: 30,
@@ -144,6 +150,7 @@ export const ATTRACTOR_SYSTEMS: Record<AttractorType, AttractorConfig> = {
   },
   halvorsen: {
     color: '#0066ff',
+    lineColors: ['#00ffcc', '#0066ff'],
     speed: 8,
     dtScale: 0.2,
     extent: 40,
@@ -164,6 +171,7 @@ export const ATTRACTOR_SYSTEMS: Record<AttractorType, AttractorConfig> = {
   },
   rabinovich: {
     color: '#aaff00',
+    lineColors: ['#aaff00', '#00aa00'],
     speed: 8,
     dtScale: 0.1,
     extent: 30,

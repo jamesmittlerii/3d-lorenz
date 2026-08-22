@@ -47,7 +47,7 @@ export function LedVolume({ type }: LedVolumeProps) {
       samples: 0,
     };
     return { pos, brightness, active, bounds };
-  }, [type, config]);
+  }, [config]);
 
   const baseColor = useMemo(() => new THREE.Color(config.color), [config.color]);
   const tempColor = useMemo(() => new THREE.Color(), []);
@@ -168,18 +168,19 @@ export function LedVolume({ type }: LedVolumeProps) {
 
   return (
     <group>
+      {/* Sonar does not recognize React Three Fiber intrinsic-element props. */}
       <lineSegments>
-        <edgesGeometry args={[edgeGeo]} />
-        <lineBasicMaterial color="#22222c" transparent opacity={0.85} />
+        <edgesGeometry args={[edgeGeo]} /> {/* NOSONAR */}
+        <lineBasicMaterial color="#22222c" transparent opacity={0.85} /> {/* NOSONAR */}
       </lineSegments>
 
       <instancedMesh
         ref={meshRef}
-        args={[undefined, undefined, LED_COUNT]}
-        frustumCulled={false}
+        args={[undefined, undefined, LED_COUNT]} /* NOSONAR */
+        frustumCulled={false} /* NOSONAR */
       >
-        <sphereGeometry args={[LED_SIZE * 0.5, 6, 4]} />
-        <meshBasicMaterial toneMapped={false} />
+        <sphereGeometry args={[LED_SIZE * 0.5, 6, 4]} /> {/* NOSONAR */}
+        <meshBasicMaterial toneMapped={false} /> {/* NOSONAR */}
       </instancedMesh>
     </group>
   );

@@ -84,8 +84,8 @@ export function LedCube({ type }: LedCubeProps) {
       ready: false,
       samples: 0,
     };
-    return { pos, brightness, bounds, type };
-  }, [type, config]);
+    return { pos, brightness, bounds };
+  }, [config]);
 
   const baseColor = useMemo(() => new THREE.Color(config.color), [config.color]);
   const tempColor = useMemo(() => new THREE.Color(), []);
@@ -95,7 +95,7 @@ export function LedCube({ type }: LedCubeProps) {
     [],
   );
 
-  // Place LED instances once (and whenever mesh remounts with type change)
+  // Place LED instances once.
   useEffect(() => {
     const mesh = meshRef.current;
     if (!mesh) return;
@@ -114,7 +114,7 @@ export function LedCube({ type }: LedCubeProps) {
     }
     mesh.instanceMatrix.needsUpdate = true;
     if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
-  }, [type, dummy, tempColor]);
+  }, [dummy, tempColor]);
 
   useFrame((_state, delta) => {
     const mesh = meshRef.current;
@@ -186,25 +186,26 @@ export function LedCube({ type }: LedCubeProps) {
 
   return (
     <group>
+      {/* Sonar does not recognize React Three Fiber intrinsic-element props. */}
       {/* Dark PCB body */}
       <mesh>
-        <boxGeometry args={[CUBE_SIZE * 0.96, CUBE_SIZE * 0.96, CUBE_SIZE * 0.96]} />
-        <meshStandardMaterial color="#08080c" roughness={0.85} metalness={0.35} />
+        <boxGeometry args={[CUBE_SIZE * 0.96, CUBE_SIZE * 0.96, CUBE_SIZE * 0.96]} /> {/* NOSONAR */}
+        <meshStandardMaterial color="#08080c" roughness={0.85} metalness={0.35} /> {/* NOSONAR */}
       </mesh>
 
       {/* Subtle edge frame */}
       <lineSegments>
-        <edgesGeometry args={[edgeGeo]} />
-        <lineBasicMaterial color="#1a1a22" transparent opacity={0.7} />
+        <edgesGeometry args={[edgeGeo]} /> {/* NOSONAR */}
+        <lineBasicMaterial color="#1a1a22" transparent opacity={0.7} /> {/* NOSONAR */}
       </lineSegments>
 
       <instancedMesh
         ref={meshRef}
-        args={[undefined, undefined, LED_COUNT]}
-        frustumCulled={false}
+        args={[undefined, undefined, LED_COUNT]} /* NOSONAR */
+        frustumCulled={false} /* NOSONAR */
       >
-        <boxGeometry args={[LED_SIZE, LED_SIZE, LED_SIZE * 0.35]} />
-        <meshBasicMaterial toneMapped={false} />
+        <boxGeometry args={[LED_SIZE, LED_SIZE, LED_SIZE * 0.35]} /> {/* NOSONAR */}
+        <meshBasicMaterial toneMapped={false} /> {/* NOSONAR */}
       </instancedMesh>
     </group>
   );

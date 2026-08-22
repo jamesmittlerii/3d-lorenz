@@ -26,6 +26,39 @@ function chuaH(x: number, m0: number, m1: number) {
   return m1 * x + 0.5 * (m0 - m1) * (Math.abs(x + 1) - Math.abs(x - 1));
 }
 
+function rk4Step(pos: Vec3, dt: number, derivative: (point: Vec3) => Vec3) {
+  const k1 = derivative(pos);
+  const k2 = derivative({
+    x: pos.x + k1.x * dt * 0.5,
+    y: pos.y + k1.y * dt * 0.5,
+    z: pos.z + k1.z * dt * 0.5,
+  });
+  const k3 = derivative({
+    x: pos.x + k2.x * dt * 0.5,
+    y: pos.y + k2.y * dt * 0.5,
+    z: pos.z + k2.z * dt * 0.5,
+  });
+  const k4 = derivative({
+    x: pos.x + k3.x * dt,
+    y: pos.y + k3.y * dt,
+    z: pos.z + k3.z * dt,
+  });
+
+  pos.x += (dt / 6) * (k1.x + 2 * k2.x + 2 * k3.x + k4.x);
+  pos.y += (dt / 6) * (k1.y + 2 * k2.y + 2 * k3.y + k4.y);
+  pos.z += (dt / 6) * (k1.z + 2 * k2.z + 2 * k3.z + k4.z);
+}
+
+function rabinovichDerivative(pos: Vec3): Vec3 {
+  const alpha = 1.1;
+  const gamma = 0.87;
+  return {
+    x: pos.y * (pos.z - 1 + pos.x * pos.x) + gamma * pos.x,
+    y: pos.x * (3 * pos.z + 1 - pos.x * pos.x) + gamma * pos.y,
+    z: -2 * pos.z * (alpha + pos.x * pos.y),
+  };
+}
+
 export const ATTRACTOR_SYSTEMS: Record<AttractorType, AttractorConfig> = {
   lorenz: {
     color: '#ff00cc',
@@ -172,20 +205,11 @@ export const ATTRACTOR_SYSTEMS: Record<AttractorType, AttractorConfig> = {
   rabinovich: {
     color: '#aaff00',
     lineColors: ['#aaff00', '#00aa00'],
-    speed: 8,
+    speed: 32,
     dtScale: 0.1,
     extent: 30,
     init: () => ({ x: -1, y: 0, z: 0.5 }),
-    step: (pos, dt) => {
-      const alpha = 0.14;
-      const gamma = 0.1;
-      const dx = (pos.y * (pos.z - 1 + pos.x * pos.x) + gamma * pos.x) * dt;
-      const dy = (pos.x * (3 * pos.z + 1 - pos.x * pos.x) + gamma * pos.y) * dt;
-      const dz = -2 * pos.z * (alpha + pos.x * pos.y) * dt;
-      pos.x += dx;
-      pos.y += dy;
-      pos.z += dz;
-    },
+    step: (pos, dt) => rk4Step(pos, dt, rabinovichDerivative),
     toDisplay: (pos) => {
       const s = 8;
       return { x: pos.x * s, y: pos.y * s, z: pos.z * s };

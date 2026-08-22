@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { ATTRACTOR_SYSTEMS, type AttractorType, type Vec3 } from '../attractors/systems';
+import { ATTRACTOR_SYSTEMS, type AttractorType } from '../attractors/systems';
+import { createRunningBounds, includePoint, normalizePoint } from '../attractors/runningBounds';
+import { LedShell } from './LedShell';
 
 const GRID = 32;
 const FACES = 6;
@@ -72,18 +74,9 @@ export function LedCube({ type }: LedCubeProps) {
   const config = ATTRACTOR_SYSTEMS[type];
 
   const sim = useMemo(() => {
-    const pos: Vec3 = config.init();
+    const pos = config.init();
     const brightness = new Float32Array(LED_COUNT);
-    const bounds = {
-      minX: Infinity,
-      minY: Infinity,
-      minZ: Infinity,
-      maxX: -Infinity,
-      maxY: -Infinity,
-      maxZ: -Infinity,
-      ready: false,
-      samples: 0,
-    };
+    const bounds = createRunningBounds();
     return { pos, brightness, bounds };
   }, [config]);
 
@@ -133,31 +126,18 @@ export function LedCube({ type }: LedCubeProps) {
       config.step(pos, dt);
       const d = config.toDisplay(pos);
 
-      bounds.minX = Math.min(bounds.minX, d.x);
-      bounds.minY = Math.min(bounds.minY, d.y);
-      bounds.minZ = Math.min(bounds.minZ, d.z);
-      bounds.maxX = Math.max(bounds.maxX, d.x);
-      bounds.maxY = Math.max(bounds.maxY, d.y);
-      bounds.maxZ = Math.max(bounds.maxZ, d.z);
-      bounds.samples++;
+      includePoint(bounds, d);
 
       // Warm up a bit so bounds aren't a single point
       if (bounds.samples < 40) continue;
-      bounds.ready = true;
 
       const pad = 0.08;
-      const spanX = Math.max(bounds.maxX - bounds.minX, 1e-3);
-      const spanY = Math.max(bounds.maxY - bounds.minY, 1e-3);
-      const spanZ = Math.max(bounds.maxZ - bounds.minZ, 1e-3);
-
-      const nx = ((d.x - bounds.minX) / spanX) * 2 - 1;
-      const ny = ((d.y - bounds.minY) / spanY) * 2 - 1;
-      const nz = ((d.z - bounds.minZ) / spanZ) * 2 - 1;
+      const normalized = normalizePoint(bounds, d);
 
       // Soft pad so the plot doesn't hug the LED edges only
-      const sx = nx * (1 - pad);
-      const sy = ny * (1 - pad);
-      const sz = nz * (1 - pad);
+      const sx = (normalized.x * 2 - 1) * (1 - pad);
+      const sy = (normalized.y * 2 - 1) * (1 - pad);
+      const sz = (normalized.z * 2 - 1) * (1 - pad);
 
       const faces = projectToFaces(sx, sy, sz);
       for (let face = 0; face < FACES; face++) {
@@ -186,27 +166,21 @@ export function LedCube({ type }: LedCubeProps) {
 
   return (
     <group>
-      {/* Sonar does not recognize React Three Fiber intrinsic-element props. */}
       {/* Dark PCB body */}
       <mesh>
         <boxGeometry args={[CUBE_SIZE * 0.96, CUBE_SIZE * 0.96, CUBE_SIZE * 0.96]} /> {/* NOSONAR */}
         <meshStandardMaterial color="#08080c" roughness={0.85} metalness={0.35} /> {/* NOSONAR */}
       </mesh>
 
-      {/* Subtle edge frame */}
-      <lineSegments>
-        <edgesGeometry args={[edgeGeo]} /> {/* NOSONAR */}
-        <lineBasicMaterial color="#1a1a22" transparent opacity={0.7} /> {/* NOSONAR */}
-      </lineSegments>
-
-      <instancedMesh
-        ref={meshRef}
-        args={[undefined, undefined, LED_COUNT]} /* NOSONAR */
-        frustumCulled={false} /* NOSONAR */
+      <LedShell
+        meshRef={meshRef}
+        count={LED_COUNT}
+        edgeGeometry={edgeGeo}
+        edgeColor="#1a1a22"
+        edgeOpacity={0.7}
       >
         <boxGeometry args={[LED_SIZE, LED_SIZE, LED_SIZE * 0.35]} /> {/* NOSONAR */}
-        <meshBasicMaterial toneMapped={false} /> {/* NOSONAR */}
-      </instancedMesh>
+      </LedShell>
     </group>
   );
 }

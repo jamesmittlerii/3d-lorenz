@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { ATTRACTOR_SYSTEMS, type AttractorType, type Vec3 } from '../attractors/systems';
+import { ATTRACTOR_SYSTEMS, type AttractorType } from '../attractors/systems';
+import { createRunningBounds, includePoint, normalizePoint } from '../attractors/runningBounds';
+import { LedShell } from './LedShell';
 
 const GRID = 32;
 const LED_COUNT = GRID * GRID * GRID;
@@ -34,18 +36,10 @@ export function LedVolume({ type }: LedVolumeProps) {
   const config = ATTRACTOR_SYSTEMS[type];
 
   const sim = useMemo(() => {
-    const pos: Vec3 = config.init();
+    const pos = config.init();
     const brightness = new Float32Array(LED_COUNT);
     const active = new Set<number>();
-    const bounds = {
-      minX: Infinity,
-      minY: Infinity,
-      minZ: Infinity,
-      maxX: -Infinity,
-      maxY: -Infinity,
-      maxZ: -Infinity,
-      samples: 0,
-    };
+    const bounds = createRunningBounds();
     return { pos, brightness, active, bounds };
   }, [config]);
 
@@ -93,24 +87,15 @@ export function LedVolume({ type }: LedVolumeProps) {
       config.step(pos, dt);
       const d = config.toDisplay(pos);
 
-      bounds.minX = Math.min(bounds.minX, d.x);
-      bounds.minY = Math.min(bounds.minY, d.y);
-      bounds.minZ = Math.min(bounds.minZ, d.z);
-      bounds.maxX = Math.max(bounds.maxX, d.x);
-      bounds.maxY = Math.max(bounds.maxY, d.y);
-      bounds.maxZ = Math.max(bounds.maxZ, d.z);
-      bounds.samples++;
+      includePoint(bounds, d);
 
       if (bounds.samples < 40) continue;
 
       const pad = 0.06;
-      const spanX = Math.max(bounds.maxX - bounds.minX, 1e-3);
-      const spanY = Math.max(bounds.maxY - bounds.minY, 1e-3);
-      const spanZ = Math.max(bounds.maxZ - bounds.minZ, 1e-3);
-
-      const nx = Math.min(0.999, Math.max(0, ((d.x - bounds.minX) / spanX) * (1 - 2 * pad) + pad));
-      const ny = Math.min(0.999, Math.max(0, ((d.y - bounds.minY) / spanY) * (1 - 2 * pad) + pad));
-      const nz = Math.min(0.999, Math.max(0, ((d.z - bounds.minZ) / spanZ) * (1 - 2 * pad) + pad));
+      const normalized = normalizePoint(bounds, d);
+      const nx = Math.min(0.999, normalized.x * (1 - 2 * pad) + pad);
+      const ny = Math.min(0.999, normalized.y * (1 - 2 * pad) + pad);
+      const nz = Math.min(0.999, normalized.z * (1 - 2 * pad) + pad);
 
       const ix = Math.floor(nx * GRID);
       const iy = Math.floor(ny * GRID);
@@ -168,20 +153,15 @@ export function LedVolume({ type }: LedVolumeProps) {
 
   return (
     <group>
-      {/* Sonar does not recognize React Three Fiber intrinsic-element props. */}
-      <lineSegments>
-        <edgesGeometry args={[edgeGeo]} /> {/* NOSONAR */}
-        <lineBasicMaterial color="#22222c" transparent opacity={0.85} /> {/* NOSONAR */}
-      </lineSegments>
-
-      <instancedMesh
-        ref={meshRef}
-        args={[undefined, undefined, LED_COUNT]} /* NOSONAR */
-        frustumCulled={false} /* NOSONAR */
+      <LedShell
+        meshRef={meshRef}
+        count={LED_COUNT}
+        edgeGeometry={edgeGeo}
+        edgeColor="#22222c"
+        edgeOpacity={0.85}
       >
         <sphereGeometry args={[LED_SIZE * 0.5, 6, 4]} /> {/* NOSONAR */}
-        <meshBasicMaterial toneMapped={false} /> {/* NOSONAR */}
-      </instancedMesh>
+      </LedShell>
     </group>
   );
 }
